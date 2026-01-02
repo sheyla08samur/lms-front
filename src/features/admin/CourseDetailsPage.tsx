@@ -1,20 +1,80 @@
 "use client";
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import AdminSidebar from '@/components/AdminSidebar';
 import ThemeToggle from '@/components/ThemeToggle';
+import { useCourses } from '@/hooks/useCourses';
+import type { Course } from '@/lib/types';
 
-export default function CourseDetailsPage() {
-    const course = {
-        title: 'Introduction to Quantum Physics',
-        instructor: 'Dr. Evelyn Reed',
-        students: 1248,
-        status: 'Published',
-        description: 'A comprehensive introduction to quantum physics covering fundamental concepts and principles.',
-        duration: '8 weeks',
-        level: 'Beginner',
-        tags: ['Science', 'Physics', 'Quantum'],
+interface CourseDetailsPageProps {
+    courseId: string;
+}
+
+export default function CourseDetailsPage({ courseId }: CourseDetailsPageProps) {
+    const router = useRouter();
+    const { getCourse, deleteCourse } = useCourses();
+    const [course, setCourse] = useState<Course | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [deleting, setDeleting] = useState(false);
+
+    useEffect(() => {
+        loadCourse();
+    }, [courseId]);
+
+    const loadCourse = async () => {
+        try {
+            setLoading(true);
+            const data = await getCourse(courseId);
+            setCourse(data);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to load course');
+        } finally {
+            setLoading(false);
+        }
     };
+
+    const handleDelete = async () => {
+        if (!course) return;
+        
+        if (!confirm(`Are you sure you want to delete "${course.title}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            setDeleting(true);
+            await deleteCourse(courseId);
+            router.push('/admin/admin-courses');
+        } catch (err) {
+            alert(err instanceof Error ? err.message : 'Failed to delete course');
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
+                <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: 'var(--accent)' }} />
+                    <p style={{ color: 'var(--text-secondary)' }}>Loading course...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error || !course) {
+        return (
+            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
+                <div className="text-center">
+                    <p style={{ color: 'var(--error)' }}>{error || 'Course not found'}</p>
+                    <Link href="/admin/admin-courses" className="mt-4 inline-block text-blue-500">Back to Courses</Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div 
@@ -29,13 +89,14 @@ export default function CourseDetailsPage() {
                             <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
                                 {course.title}
                             </h1>
+                            <p style={{ color: 'var(--text-secondary)' }}>Course ID: {course.id}</p>
                             <p style={{ color: 'var(--text-secondary)' }}>Course Details and Information</p>
                         </div>
                         <div className="flex items-center gap-4">
                             <ThemeToggle />
                             <div className="flex gap-3">
                                 <Link
-                                    href="/admin/admin-courses/edit-course"
+                                    href={`/admin/admin-courses/edit-course?id=${course.id}`}
                                     className="px-4 py-2 rounded-lg border transition-all duration-200 hover:opacity-80"
                                     style={{ 
                                         borderColor: 'var(--border)',
@@ -45,10 +106,12 @@ export default function CourseDetailsPage() {
                                     Edit
                                 </Link>
                                 <button 
-                                    className="px-4 py-2 rounded-lg transition-all duration-200 hover:opacity-90"
+                                    onClick={handleDelete}
+                                    disabled={deleting}
+                                    className="px-4 py-2 rounded-lg transition-all duration-200 hover:opacity-90 disabled:opacity-50"
                                     style={{ backgroundColor: 'var(--error)', color: 'white' }}
                                 >
-                                    Delete
+                                    {deleting ? 'Deleting...' : 'Delete'}
                                 </button>
                             </div>
                         </div>

@@ -1,21 +1,65 @@
 "use client";
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import AdminSidebar from '@/components/AdminSidebar';
 import ThemeToggle from '@/components/ThemeToggle';
 import { FaShieldAlt } from 'react-icons/fa';
+import { useUsers } from '@/hooks/useUsers';
+import { useEnrollments } from '@/hooks/useEnrollments';
+import type { User } from '@/lib/types';
 
-export default function AdminUserDetailsPage() {
-    const user = {
-        name: 'Amelia Rodriguez',
-        email: 'amelia.r@lms.com',
-        role: 'Admin',
-        status: 'Active',
-        joinedDate: 'January 15, 2023',
-        lastActive: '2 hours ago',
-        coursesEnrolled: 12,
-        coursesCompleted: 8,
+interface AdminUserDetailsPageProps {
+    userId: string;
+}
+
+export default function AdminUserDetailsPage({ userId }: AdminUserDetailsPageProps) {
+    const { getUser } = useUsers();
+    const { enrollments, fetchEnrollments } = useEnrollments(userId);
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        loadUser();
+        fetchEnrollments(userId);
+    }, [userId]);
+
+    const loadUser = async () => {
+        try {
+            setLoading(true);
+            const data = await getUser(userId);
+            setUser(data);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to load user');
+        } finally {
+            setLoading(false);
+        }
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
+                <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: 'var(--accent)' }} />
+                    <p style={{ color: 'var(--text-secondary)' }}>Loading user...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error || !user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
+                <div className="text-center">
+                    <p style={{ color: 'var(--error)' }}>{error || 'User not found'}</p>
+                    <Link href="/admin/admin-users" className="mt-4 inline-block text-blue-500">Back to Users</Link>
+                </div>
+            </div>
+        );
+    }
+
+    const completedCourses = enrollments.filter(e => e.progress >= 100).length;
 
     const getInitials = (name: string) => {
         return name
@@ -43,7 +87,7 @@ export default function AdminUserDetailsPage() {
                         <div className="flex items-center gap-4">
                             <ThemeToggle />
                             <Link
-                                href={`/admin/admin-users/edit-user`}
+                                href={`/admin/admin-users/edit-user?id=${user.id}`}
                                 className="px-4 py-2 rounded-lg transition-all duration-200 hover:opacity-90"
                                 style={{ backgroundColor: 'var(--accent)', color: 'white' }}
                             >
@@ -101,25 +145,27 @@ export default function AdminUserDetailsPage() {
                                 <label className="text-sm mb-1 block" style={{ color: 'var(--text-secondary)' }}>
                                     Joined Date
                                 </label>
-                                <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{user.joinedDate}</p>
+                                <p className="font-medium" style={{ color: 'var(--text-primary)' }}>
+                                    {new Date(user.createdAt).toLocaleDateString()}
+                                </p>
                             </div>
                             <div>
                                 <label className="text-sm mb-1 block" style={{ color: 'var(--text-secondary)' }}>
-                                    Last Active
+                                    User ID
                                 </label>
-                                <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{user.lastActive}</p>
+                                <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{user.id}</p>
                             </div>
                             <div>
                                 <label className="text-sm mb-1 block" style={{ color: 'var(--text-secondary)' }}>
                                     Courses Enrolled
                                 </label>
-                                <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{user.coursesEnrolled}</p>
+                                <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{enrollments.length}</p>
                             </div>
                             <div>
                                 <label className="text-sm mb-1 block" style={{ color: 'var(--text-secondary)' }}>
                                     Courses Completed
                                 </label>
-                                <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{user.coursesCompleted}</p>
+                                <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{completedCourses}</p>
                             </div>
                         </div>
                     </div>

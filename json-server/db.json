@@ -1,0 +1,125 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Alex Mercer",
+      "email": "user@test.com",
+      "password": "password123",
+      "role": "user",
+      "createdAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "name": "Admin User",
+      "email": "admin@test.com",
+      "password": "admin123",
+      "role": "admin",
+      "createdAt": "2024-01-10T10:00:00Z"
+    }
+  ],
+  "courses": [
+    {
+      "id": "1",
+      "title": "Introduction to Quantum Computing",
+      "description": "A comprehensive introduction to quantum computing covering fundamental concepts, quantum algorithms, and practical applications in modern computing.",
+      "instructor": "Dr. Evelyn Reed",
+      "duration": "8 weeks",
+      "level": "Beginner",
+      "status": "Published",
+      "tags": ["Science", "Advanced", "Quantum"],
+      "thumbnail": "",
+      "students": 1248,
+      "createdAt": "2024-01-20T10:00:00Z",
+      "updatedAt": "2024-01-20T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "title": "Data Visualization with D3.js",
+      "description": "Learn to create stunning data visualizations using D3.js. Master the art of transforming data into interactive charts and graphs.",
+      "instructor": "Leo Martinez",
+      "duration": "6 weeks",
+      "level": "Intermediate",
+      "status": "Draft",
+      "tags": ["Data Science", "Beginner", "JavaScript"],
+      "thumbnail": "",
+      "students": 892,
+      "createdAt": "2024-01-18T10:00:00Z",
+      "updatedAt": "2024-01-25T10:00:00Z"
+    },
+    {
+      "id": "3",
+      "title": "Advanced SEO Strategies",
+      "description": "Master advanced SEO techniques to improve your website's search engine rankings and drive organic traffic.",
+      "instructor": "Chen Wei",
+      "duration": "4 weeks",
+      "level": "Advanced",
+      "status": "Published",
+      "tags": ["Marketing", "Intermediate", "SEO"],
+      "thumbnail": "",
+      "students": 2103,
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-01-22T10:00:00Z"
+    },
+    {
+      "id": "4",
+      "title": "Foundations of Project Management",
+      "description": "Essential project management skills for leading successful projects from initiation to completion.",
+      "instructor": "Aisha Khan",
+      "duration": "5 weeks",
+      "level": "Beginner",
+      "status": "Published",
+      "tags": ["Business", "Beginner", "Management"],
+      "thumbnail": "",
+      "students": 1567,
+      "createdAt": "2024-01-12T10:00:00Z",
+      "updatedAt": "2024-01-19T10:00:00Z"
+    },
+    {
+      "id": "5",
+      "title": "UI/UX for Mobile Applications",
+      "description": "Design beautiful and intuitive mobile user interfaces. Learn best practices for mobile UX design.",
+      "instructor": "Ben Carter",
+      "duration": "7 weeks",
+      "level": "Intermediate",
+      "status": "Published",
+      "tags": ["Design", "Intermediate", "Mobile"],
+      "thumbnail": "",
+      "students": 934,
+      "createdAt": "2024-01-10T10:00:00Z",
+      "updatedAt": "2024-01-17T10:00:00Z"
+    },
+    {
+      "id": "6",
+      "title": "Modern JavaScript: ES6 and Beyond",
+      "description": "Deep dive into modern JavaScript features including ES6+, async/await, modules, and advanced patterns.",
+      "instructor": "Sofia Rodriguez",
+      "duration": "6 weeks",
+      "level": "Advanced",
+      "status": "Published",
+      "tags": ["Development", "Advanced", "JavaScript"],
+      "thumbnail": "",
+      "students": 1876,
+      "createdAt": "2024-01-08T10:00:00Z",
+      "updatedAt": "2024-01-15T10:00:00Z"
+    }
+  ],
+  "enrollments": [
+    {
+      "id": "1",
+      "userId": "1",
+      "courseId": "1",
+      "progress": 75,
+      "enrolledAt": "2024-01-25T10:00:00Z",
+      "completedAt": null
+    },
+    {
+      "id": "2",
+      "userId": "1",
+      "courseId": "5",
+      "progress": 25,
+      "enrolledAt": "2024-01-28T10:00:00Z",
+      "completedAt": null
+    }
+  ]
+}
+

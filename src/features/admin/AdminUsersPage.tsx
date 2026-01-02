@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { 
     HiHome, HiBookOpen, HiUsers, HiChartBar, HiCog, HiQuestionMarkCircle, HiLogout,
     HiSearch, HiChevronLeft, HiChevronRight, HiDotsVertical
@@ -10,65 +11,46 @@ import { FaShieldAlt, FaGraduationCap, FaBook, FaEye } from 'react-icons/fa';
 import { HiAcademicCap } from 'react-icons/hi';
 import { useAuth } from '@/contexts/AuthContext';
 import ThemeToggle from '@/components/ThemeToggle';
+import { useUsers } from '@/hooks/useUsers';
+import type { User } from '@/lib/types';
 
 export default function AdminUsersPage() {
     const pathname = usePathname();
     const { user, logout } = useAuth();
+    const { users, loading, error, deleteUser } = useUsers();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
-    const users = [
-        {
-            id: 1,
-            name: 'Amelia Rodriguez',
-            email: 'amelia.r@lms.com',
-            role: 'Admin',
-            roleColor: 'rgba(168, 85, 247, 0.2)',
-            roleTextColor: '#a855f7',
-            status: 'Active',
-            statusColor: 'rgba(34, 197, 94, 0.2)',
-            statusTextColor: '#22c55e',
-            permissions: 'Full System Access',
-            permissionIcon: FaShieldAlt,
-        },
-        {
-            id: 2,
-            name: 'Ben Carter',
-            email: 'ben.carter@lms.com',
-            role: 'Instructor',
-            roleColor: 'rgba(34, 197, 94, 0.2)',
-            roleTextColor: '#22c55e',
-            status: 'Active',
-            statusColor: 'rgba(34, 197, 94, 0.2)',
-            statusTextColor: '#22c55e',
-            permissions: 'Course Creation & Management',
-            permissionIcon: FaGraduationCap,
-        },
-        {
-            id: 3,
-            name: 'Chloe Davis',
-            email: 'chloe.d@lms.com',
-            role: 'Student',
-            roleColor: 'rgba(59, 130, 246, 0.2)',
-            roleTextColor: '#3b82f6',
-            status: 'Inactive',
-            statusColor: 'rgba(239, 68, 68, 0.2)',
-            statusTextColor: '#ef4444',
-            permissions: 'View & Enroll in Courses',
-            permissionIcon: FaBook,
-        },
-        {
-            id: 4,
-            name: 'David Evans',
-            email: 'david.evans@lms.com',
-            role: 'Supervisor',
-            roleColor: 'rgba(34, 197, 94, 0.2)',
-            roleTextColor: '#22c55e',
-            status: 'Active',
-            statusColor: 'rgba(34, 197, 94, 0.2)',
-            statusTextColor: '#22c55e',
-            permissions: 'Team Reporting & Oversight',
-            permissionIcon: FaEye,
-        },
-    ];
+    const handleDelete = async (id: string, name: string) => {
+        if (!confirm(`Are you sure you want to delete user "${name}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            setDeletingId(id);
+            await deleteUser(id);
+        } catch (err) {
+            alert(err instanceof Error ? err.message : 'Failed to delete user');
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
+    const getRoleColor = (role: string) => {
+        switch (role.toLowerCase()) {
+            case 'admin':
+                return { bg: 'rgba(168, 85, 247, 0.2)', text: '#a855f7', icon: FaShieldAlt };
+            case 'user':
+                return { bg: 'rgba(59, 130, 246, 0.2)', text: '#3b82f6', icon: FaBook };
+            default:
+                return { bg: 'rgba(34, 197, 94, 0.2)', text: '#22c55e', icon: FaGraduationCap };
+        }
+    };
+
+    const filteredUsers = users.filter(u => 
+        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     const navItems = [
         { href: '/admin/admin-dashboard', icon: HiHome, label: 'Dashboard' },
@@ -232,6 +214,8 @@ export default function AdminUsersPage() {
                         />
                         <input
                             type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Search by name, email, or role..."
                             className="w-full rounded-lg pl-10 pr-4 py-2 focus:outline-none transition-all"
                             style={{
@@ -277,87 +261,123 @@ export default function AdminUsersPage() {
                     </select>
                 </div>
 
+                {error && (
+                    <div className="mb-4 p-4 rounded-lg" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)' }}>
+                        {error}
+                    </div>
+                )}
+
+                {loading && (
+                    <div className="text-center py-12">
+                        <div 
+                            className="w-16 h-16 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4"
+                            style={{ borderColor: 'var(--accent)' }}
+                        />
+                        <p style={{ color: 'var(--text-secondary)' }}>Loading users...</p>
+                    </div>
+                )}
+
                 {/* User Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                    {users.map((userItem) => (
-                        <Link
-                            key={userItem.id}
-                            href={`/admin/admin-users/${userItem.id}`}
-                            className="rounded-lg p-6 border shadow-sm relative transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
-                            style={{
-                                backgroundColor: 'var(--bg-secondary)',
-                                borderColor: 'var(--border)',
-                            }}
-                        >
-                            <button 
-                                className="absolute top-4 right-4 transition-colors"
-                                style={{ color: 'var(--text-secondary)' }}
-                                onClick={(e) => e.preventDefault()}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.color = 'var(--text-primary)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.color = 'var(--text-secondary)';
-                                }}
-                            >
-                                <HiDotsVertical className="w-5 h-5" />
-                            </button>
-                            
-                            <div className="mb-4">
-                                <div 
-                                    className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold mb-3"
-                                    style={{ 
-                                        background: 'linear-gradient(135deg, var(--accent), var(--accent-light))',
-                                    }}
-                                >
-                                    {getInitials(userItem.name)}
-                                </div>
-                                <h3 className="font-semibold text-lg mb-1" style={{ color: 'var(--text-primary)' }}>
-                                    {userItem.name}
-                                </h3>
-                                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                                    {userItem.email}
-                                </p>
+                {!loading && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        {filteredUsers.length === 0 ? (
+                            <div className="col-span-full text-center py-12" style={{ color: 'var(--text-secondary)' }}>
+                                No users found
                             </div>
+                        ) : (
+                            filteredUsers.map((userItem) => {
+                                const roleColors = getRoleColor(userItem.role);
+                                const RoleIcon = roleColors.icon;
+                                const permissions = userItem.role === 'admin' 
+                                    ? 'Full System Access' 
+                                    : userItem.role === 'user' 
+                                    ? 'View & Enroll in Courses' 
+                                    : 'Limited Access';
 
-                            <div className="mb-4 flex gap-2">
-                                <span 
-                                    className="px-3 py-1 rounded-full text-xs font-medium"
-                                    style={{
-                                        backgroundColor: userItem.roleColor,
-                                        color: userItem.roleTextColor,
-                                    }}
-                                >
-                                    {userItem.role}
-                                </span>
-                                <span 
-                                    className="px-3 py-1 rounded-full text-xs font-medium"
-                                    style={{
-                                        backgroundColor: userItem.statusColor,
-                                        color: userItem.statusTextColor,
-                                    }}
-                                >
-                                    {userItem.status}
-                                </span>
-                            </div>
+                                return (
+                                    <div
+                                        key={userItem.id}
+                                        className="rounded-lg p-6 border shadow-sm relative transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
+                                        style={{
+                                            backgroundColor: 'var(--bg-secondary)',
+                                            borderColor: 'var(--border)',
+                                        }}
+                                    >
+                                        <div className="absolute top-4 right-4 flex gap-2">
+                                            <Link
+                                                href={`/admin/admin-users/${userItem.id}`}
+                                                className="p-2 rounded transition-colors"
+                                                style={{ color: 'var(--text-secondary)' }}
+                                                onMouseEnter={(e) => {
+                                                    e.currentTarget.style.color = 'var(--accent)';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.color = 'var(--text-secondary)';
+                                                }}
+                                            >
+                                                <FaEye className="w-4 h-4" />
+                                            </Link>
+                                            <button
+                                                onClick={() => handleDelete(userItem.id, userItem.name)}
+                                                disabled={deletingId === userItem.id}
+                                                className="p-2 rounded transition-colors disabled:opacity-50"
+                                                style={{ color: 'var(--error)' }}
+                                            >
+                                                {deletingId === userItem.id ? '...' : '×'}
+                                            </button>
+                                        </div>
+                                        
+                                        <Link href={`/admin/admin-users/${userItem.id}`}>
+                                            <div className="mb-4">
+                                                <div 
+                                                    className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold mb-3"
+                                                    style={{ 
+                                                        background: 'linear-gradient(135deg, var(--accent), var(--accent-light))',
+                                                    }}
+                                                >
+                                                    {getInitials(userItem.name)}
+                                                </div>
+                                                <h3 className="font-semibold text-lg mb-1" style={{ color: 'var(--text-primary)' }}>
+                                                    {userItem.name}
+                                                </h3>
+                                                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                                    {userItem.email}
+                                                </p>
+                                            </div>
 
-                            <div className="pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
-                                <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
-                                    PERMISSIONS
-                                </p>
-                                <div className="flex items-center gap-2">
-                                    <userItem.permissionIcon 
-                                        className="w-5 h-5"
-                                        style={{ color: 'var(--text-secondary)' }}
-                                    />
-                                    <p className="text-sm" style={{ color: 'var(--text-primary)' }}>
-                                        {userItem.permissions}
-                                    </p>
-                                </div>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
+                                            <div className="mb-4 flex gap-2">
+                                                <span 
+                                                    className="px-3 py-1 rounded-full text-xs font-medium capitalize"
+                                                    style={{
+                                                        backgroundColor: roleColors.bg,
+                                                        color: roleColors.text,
+                                                    }}
+                                                >
+                                                    {userItem.role}
+                                                </span>
+                                            </div>
+
+                                            <div className="pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+                                                <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
+                                                    PERMISSIONS
+                                                </p>
+                                                <div className="flex items-center gap-2">
+                                                    <RoleIcon 
+                                                        className="w-5 h-5"
+                                                        style={{ color: 'var(--text-secondary)' }}
+                                                    />
+                                                    <p className="text-sm" style={{ color: 'var(--text-primary)' }}>
+                                                        {permissions}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+                )}
 
                 {/* Pagination */}
                 <div className="flex items-center justify-center gap-2">

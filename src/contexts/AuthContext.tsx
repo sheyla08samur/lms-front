@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, mockAuth } from '@/lib/mockAuth';
+import { User, auth } from '@/lib/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -22,14 +22,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Cargar usuario desde localStorage
-    const currentUser = mockAuth.getCurrentUser();
+    const currentUser = auth.getCurrentUser();
     setUser(currentUser);
     setLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      const loggedInUser = await mockAuth.login(email, password);
+      const loggedInUser = await auth.login(email, password);
       setUser(loggedInUser);
 
       // Redirigir según el rol
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (name: string, email: string, password: string) => {
     try {
-      const newUser = await mockAuth.register(name, email, password);
+      const newUser = await auth.register(name, email, password);
       setUser(newUser);
       router.push('/user/user-dashboard');
     } catch (error) {
@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
-    mockAuth.logout();
+    auth.logout();
     setUser(null);
     router.push('/home');
   };

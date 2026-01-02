@@ -10,6 +10,7 @@ import { FaCertificate } from 'react-icons/fa';
 import { HiAcademicCap } from 'react-icons/hi';
 import { useAuth } from '@/contexts/AuthContext';
 import ThemeToggle from '@/components/ThemeToggle';
+import UserSidebar from '@/components/UserSidebar';
 
 export default function UserDashboardPage() {
     const pathname = usePathname();
@@ -53,96 +54,7 @@ export default function UserDashboardPage() {
             className="min-h-screen flex"
             style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
         >
-            {/* Sidebar */}
-            <aside 
-                className="w-64 p-6 flex flex-col min-h-screen border-r sticky top-0"
-                style={{ 
-                    backgroundColor: 'var(--bg-secondary)',
-                    borderColor: 'var(--border)',
-                }}
-            >
-                <Link href="/home" className="mb-8 flex items-center gap-3">
-                    <div 
-                        className="w-12 h-12 rounded-lg flex items-center justify-center"
-                        style={{ backgroundColor: 'var(--accent)' }}
-                    >
-                        <HiAcademicCap className="w-6 h-6 text-white" />
-                    </div>
-                    <h2 
-                        className="text-xl font-bold"
-                        style={{ color: 'var(--text-primary)' }}
-                    >
-                        Breakline Educate
-                    </h2>
-                </Link>
-
-                <nav className="flex-1 space-y-2">
-                    {navItems.map((item) => {
-                        const isActive = pathname === item.href;
-                        const Icon = item.icon;
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                                    isActive ? '' : 'hover:opacity-80'
-                                }`}
-                                style={{
-                                    backgroundColor: isActive ? 'var(--accent)' : 'transparent',
-                                    color: isActive ? 'white' : 'var(--text-secondary)',
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (!isActive) {
-                                        e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
-                                        e.currentTarget.style.color = 'var(--text-primary)';
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (!isActive) {
-                                        e.currentTarget.style.backgroundColor = 'transparent';
-                                        e.currentTarget.style.color = 'var(--text-secondary)';
-                                    }
-                                }}
-                            >
-                                <Icon className="w-5 h-5" />
-                                {item.label}
-                            </Link>
-                        );
-                    })}
-                </nav>
-
-                <div className="space-y-2">
-                    <button
-                        className="w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200"
-                        style={{ color: 'var(--text-secondary)' }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
-                            e.currentTarget.style.color = 'var(--text-primary)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                            e.currentTarget.style.color = 'var(--text-secondary)';
-                        }}
-                    >
-                        <HiCog className="w-5 h-5" />
-                        Settings
-                    </button>
-                    <button
-                        onClick={logout}
-                        className="w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200"
-                        style={{ color: 'var(--error)' }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
-                    >
-                        <HiLogout className="w-5 h-5" />
-                        Logout
-                    </button>
-                </div>
-            </aside>
+            <UserSidebar />
 
             {/* Main Content */}
             <main className="flex-1 p-8" style={{ backgroundColor: 'var(--bg-primary)' }}>

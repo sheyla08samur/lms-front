@@ -1,145 +1,53 @@
 "use client";
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { HiHome, HiBookOpen, HiUsers, HiCog, HiQuestionMarkCircle, HiSearch, HiLogout } from 'react-icons/hi';
-import { HiAcademicCap } from 'react-icons/hi';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { HiSearch } from 'react-icons/hi';
 import { useAuth } from '@/contexts/AuthContext';
 import ThemeToggle from '@/components/ThemeToggle';
+import AdminSidebar from '@/components/AdminSidebar';
+import { useCourses } from '@/hooks/useCourses';
 
 export default function AdminCoursesPage() {
     const pathname = usePathname();
+    const router = useRouter();
     const { user, logout } = useAuth();
+    const { courses, loading, error, deleteCourse } = useCourses();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState<string>('All Status');
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
-    const courses = [
-        { id: 1, title: 'Introduction to Quantum Computing', instructor: 'Dr. Evelyn Reed', students: 1248, status: 'Published', progress: 85 },
-        { id: 2, title: 'Data Visualization with D3.js', instructor: 'Leo Martinez', students: 892, status: 'Draft', progress: 45 },
-        { id: 3, title: 'Advanced SEO Strategies', instructor: 'Chen Wei', students: 2103, status: 'Published', progress: 92 },
-        { id: 4, title: 'Foundations of Project Management', instructor: 'Aisha Khan', students: 1567, status: 'Published', progress: 78 },
-    ];
+    const handleDelete = async (id: string, title: string) => {
+        if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
+            return;
+        }
 
-    const navItems = [
-        { href: '/admin/admin-dashboard', icon: HiHome, label: 'Dashboard' },
-        { href: '/admin/admin-courses', icon: HiBookOpen, label: 'Courses' },
-        { href: '/admin/admin-users', icon: HiUsers, label: 'Users' },
-    ];
+        try {
+            setDeletingId(id);
+            await deleteCourse(id);
+        } catch (err) {
+            alert(err instanceof Error ? err.message : 'Failed to delete course');
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
+    const filteredCourses = courses.filter(course => {
+        const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            course.instructor.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'All Status' || course.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
 
     return (
         <div 
             className="min-h-screen flex"
             style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
         >
-            {/* Sidebar */}
-            <aside 
-                className="w-64 p-6 flex flex-col min-h-screen border-r sticky top-0"
-                style={{ 
-                    backgroundColor: 'var(--bg-secondary)',
-                    borderColor: 'var(--border)',
-                }}
-            >
-                <Link href="/home" className="mb-8">
-                    <div className="flex items-center gap-3">
-                        <div 
-                            className="w-12 h-12 rounded-lg flex items-center justify-center"
-                            style={{ backgroundColor: 'var(--accent)' }}
-                        >
-                            <HiAcademicCap className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                            <h2 
-                                className="text-xl font-bold"
-                                style={{ color: 'var(--text-primary)' }}
-                            >
-                                Breakline Educate
-                            </h2>
-                            <p 
-                                className="text-xs"
-                                style={{ color: 'var(--text-secondary)' }}
-                            >
-                                Admin Panel
-                            </p>
-                        </div>
-                    </div>
-                </Link>
-
-                <nav className="flex-1 space-y-2">
-                    {navItems.map((item) => {
-                        const isActive = pathname === item.href;
-                        const Icon = item.icon;
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                                    isActive ? '' : 'hover:opacity-80'
-                                }`}
-                                style={{
-                                    backgroundColor: isActive ? 'var(--accent)' : 'transparent',
-                                    color: isActive ? 'white' : 'var(--text-secondary)',
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (!isActive) {
-                                        e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
-                                        e.currentTarget.style.color = 'var(--text-primary)';
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (!isActive) {
-                                        e.currentTarget.style.backgroundColor = 'transparent';
-                                        e.currentTarget.style.color = 'var(--text-secondary)';
-                                    }
-                                }}
-                            >
-                                <Icon className="w-5 h-5" />
-                                {item.label}
-                            </Link>
-                        );
-                    })}
-                </nav>
-
-                <Link
-                    href="/admin/admin-courses/new-course"
-                    className="w-full py-3 px-4 rounded-lg font-medium mb-4 text-center transition-all duration-200 hover:opacity-90"
-                    style={{ backgroundColor: 'var(--accent)', color: 'white' }}
-                >
-                    Create Course
-                </Link>
-
-                <div className="space-y-2">
-                    <button
-                        className="w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200"
-                        style={{ color: 'var(--text-secondary)' }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
-                            e.currentTarget.style.color = 'var(--text-primary)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                            e.currentTarget.style.color = 'var(--text-secondary)';
-                        }}
-                    >
-                        <HiCog className="w-5 h-5" />
-                        Settings
-                    </button>
-                    <button
-                        onClick={logout}
-                        className="w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200"
-                        style={{ color: 'var(--error)' }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
-                    >
-                        <HiLogout className="w-5 h-5" />
-                        Logout
-                    </button>
-                </div>
-            </aside>
-
+            <AdminSidebar />
             {/* Main Content */}
-            <main className="flex-1 p-8" style={{ backgroundColor: 'var(--bg-primary)' }}>
+            <main className="flex-1 p-8 overflow-y-auto" style={{ backgroundColor: 'var(--bg-primary)' }}>
                 <div className="mb-8 flex justify-between items-center">
                     <div>
                         <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
@@ -171,6 +79,8 @@ export default function AdminCoursesPage() {
                         <input 
                             type="text" 
                             placeholder="Search courses..." 
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full rounded-lg pl-10 pr-4 py-2 focus:outline-none transition-all"
                             style={{
                                 backgroundColor: 'var(--bg-secondary)',
@@ -187,6 +97,8 @@ export default function AdminCoursesPage() {
                         />
                     </div>
                     <select 
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
                         className="rounded-lg px-4 py-2 focus:outline-none transition-all"
                         style={{
                             backgroundColor: 'var(--bg-secondary)',
@@ -201,120 +113,132 @@ export default function AdminCoursesPage() {
                     </select>
                 </div>
 
-                {/* Courses Table */}
-                <div 
-                    className="rounded-lg border overflow-hidden"
-                    style={{
-                        backgroundColor: 'var(--bg-secondary)',
-                        borderColor: 'var(--border)',
-                    }}
-                >
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead style={{ backgroundColor: 'var(--bg-tertiary)' }}>
-                                <tr>
-                                    <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                                        Course
-                                    </th>
-                                    <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                                        Instructor
-                                    </th>
-                                    <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                                        Students
-                                    </th>
-                                    <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                                        Status
-                                    </th>
-                                    <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                                        Progress
-                                    </th>
-                                    <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {courses.map((course) => (
-                                    <tr 
-                                        key={course.id} 
-                                        className="border-b transition-colors hover:opacity-80"
-                                        style={{ borderColor: 'var(--border)' }}
-                                    >
-                                        <td className="px-6 py-4">
-                                            <div className="font-medium" style={{ color: 'var(--text-primary)' }}>
-                                                {course.title}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4" style={{ color: 'var(--text-secondary)' }}>
-                                            {course.instructor}
-                                        </td>
-                                        <td className="px-6 py-4" style={{ color: 'var(--text-primary)' }}>
-                                            {course.students.toLocaleString()}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span 
-                                                className="px-3 py-1 rounded-full text-xs font-medium"
-                                                style={{
-                                                    backgroundColor: course.status === 'Published' 
-                                                        ? 'rgba(34, 197, 94, 0.2)' 
-                                                        : 'rgba(234, 179, 8, 0.2)',
-                                                    color: course.status === 'Published' 
-                                                        ? 'var(--success)' 
-                                                        : 'var(--warning)',
-                                                }}
-                                            >
-                                                {course.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                <div 
-                                                    className="flex-1 rounded-full h-2"
-                                                    style={{ backgroundColor: 'var(--bg-tertiary)' }}
-                                                >
-                                                    <div 
-                                                        className="h-2 rounded-full transition-all"
-                                                        style={{ 
-                                                            width: `${course.progress}%`,
-                                                            backgroundColor: 'var(--accent)',
-                                                        }}
-                                                    />
-                                                </div>
-                                                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                                                    {course.progress}%
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex gap-2">
-                                                <Link
-                                                    href={`/admin/admin-courses/edit-course?id=${course.id}`}
-                                                    className="text-sm transition-colors hover:opacity-80"
-                                                    style={{ color: 'var(--accent)' }}
-                                                >
-                                                    Edit
-                                                </Link>
-                                                <Link
-                                                    href={`/admin/admin-courses/${course.id}`}
-                                                    className="text-sm transition-colors hover:opacity-80"
-                                                    style={{ color: 'var(--accent)' }}
-                                                >
-                                                    View
-                                                </Link>
-                                                <button 
-                                                    className="text-sm transition-colors hover:opacity-80"
-                                                    style={{ color: 'var(--error)' }}
-                                                >
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                {error && (
+                    <div className="mb-4 p-4 rounded-lg" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)' }}>
+                        {error}
                     </div>
-                </div>
+                )}
+
+                {loading && (
+                    <div className="text-center py-12">
+                        <div 
+                            className="w-16 h-16 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4"
+                            style={{ borderColor: 'var(--accent)' }}
+                        />
+                        <p style={{ color: 'var(--text-secondary)' }}>Loading courses...</p>
+                    </div>
+                )}
+
+                {/* Courses Table */}
+                {!loading && (
+                    <div 
+                        className="rounded-lg border overflow-hidden"
+                        style={{
+                            backgroundColor: 'var(--bg-secondary)',
+                            borderColor: 'var(--border)',
+                        }}
+                    >
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+                                    <tr>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                                            Course
+                                        </th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                                            Instructor
+                                        </th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                                            Students
+                                        </th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                                            Status
+                                        </th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                                            Level
+                                        </th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredCourses.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={6} className="px-6 py-12 text-center" style={{ color: 'var(--text-secondary)' }}>
+                                                No courses found
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filteredCourses.map((course) => (
+                                            <tr 
+                                                key={course.id} 
+                                                className="border-b transition-colors hover:opacity-80"
+                                                style={{ borderColor: 'var(--border)' }}
+                                            >
+                                                <td className="px-6 py-4">
+                                                    <div className="font-medium" style={{ color: 'var(--text-primary)' }}>
+                                                        {course.title}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4" style={{ color: 'var(--text-secondary)' }}>
+                                                    {course.instructor}
+                                                </td>
+                                                <td className="px-6 py-4" style={{ color: 'var(--text-primary)' }}>
+                                                    {course.students.toLocaleString()}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span 
+                                                        className="px-3 py-1 rounded-full text-xs font-medium"
+                                                        style={{
+                                                            backgroundColor: course.status === 'Published' 
+                                                                ? 'rgba(34, 197, 94, 0.2)' 
+                                                                : 'rgba(234, 179, 8, 0.2)',
+                                                            color: course.status === 'Published' 
+                                                                ? 'var(--success)' 
+                                                                : 'var(--warning)',
+                                                        }}
+                                                    >
+                                                        {course.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4" style={{ color: 'var(--text-secondary)' }}>
+                                                    {course.level}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex gap-2">
+                                                        <Link
+                                                            href={`/admin/admin-courses/edit-course?id=${course.id}`}
+                                                            className="text-sm transition-colors hover:opacity-80"
+                                                            style={{ color: 'var(--accent)' }}
+                                                        >
+                                                            Edit
+                                                        </Link>
+                                                        <Link
+                                                            href={`/admin/admin-courses/${course.id}`}
+                                                            className="text-sm transition-colors hover:opacity-80"
+                                                            style={{ color: 'var(--accent)' }}
+                                                        >
+                                                            View
+                                                        </Link>
+                                                        <button 
+                                                            onClick={() => handleDelete(course.id, course.title)}
+                                                            disabled={deletingId === course.id}
+                                                            className="text-sm transition-colors hover:opacity-80 disabled:opacity-50"
+                                                            style={{ color: 'var(--error)' }}
+                                                        >
+                                                            {deletingId === course.id ? 'Deleting...' : 'Delete'}
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );

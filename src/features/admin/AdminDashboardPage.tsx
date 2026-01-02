@@ -3,12 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-    HiHome, HiUsers, HiLightningBolt, HiChartBar, HiCog, HiQuestionMarkCircle,
-    HiArrowUp, HiArrowDown, HiDownload, HiBookOpen, HiLogout
+    HiArrowUp, HiArrowDown, HiDownload
 } from 'react-icons/hi';
-import { HiAcademicCap } from 'react-icons/hi';
 import { useAuth } from '@/contexts/AuthContext';
 import ThemeToggle from '@/components/ThemeToggle';
+import AdminSidebar from '@/components/AdminSidebar';
 
 export default function AdminDashboardPage() {
     const pathname = usePathname();
@@ -41,14 +40,6 @@ export default function AdminDashboardPage() {
         { question: 'Describe the CSS box model.', course: 'Web Development Fundamentals', incorrectRate: '61%', attempts: 2110 },
     ];
 
-    const navItems = [
-        { href: '/admin/admin-dashboard', icon: HiHome, label: 'Dashboard' },
-        { href: '/admin/admin-users', icon: HiUsers, label: 'Users' },
-        { href: '/admin/admin-courses', icon: HiBookOpen, label: 'Courses' },
-        { href: '#', icon: HiLightningBolt, label: 'Activity' },
-        { href: '#', icon: HiChartBar, label: 'Analytics' },
-    ];
-
     const getInitials = (name: string) => {
         return name
             .split(' ')
@@ -63,115 +54,7 @@ export default function AdminDashboardPage() {
             className="min-h-screen flex"
             style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
         >
-            {/* Sidebar */}
-            <aside 
-                className="w-64 p-6 flex flex-col min-h-screen border-r sticky top-0"
-                style={{ 
-                    backgroundColor: 'var(--bg-secondary)',
-                    borderColor: 'var(--border)',
-                }}
-            >
-                <Link href="/home" className="mb-8">
-                    <div className="flex items-center gap-3">
-                        <div 
-                            className="w-12 h-12 rounded-lg flex items-center justify-center"
-                            style={{ backgroundColor: 'var(--accent)' }}
-                        >
-                            <HiAcademicCap className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                            <h2 
-                                className="text-xl font-bold"
-                                style={{ color: 'var(--text-primary)' }}
-                            >
-                                Breakline Educate
-                            </h2>
-                            <p 
-                                className="text-xs"
-                                style={{ color: 'var(--text-secondary)' }}
-                            >
-                                Admin Panel
-                            </p>
-                        </div>
-                    </div>
-                </Link>
-
-                <nav className="flex-1 space-y-2">
-                    {navItems.map((item) => {
-                        const isActive = pathname === item.href;
-                        const Icon = item.icon;
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                                    isActive ? '' : 'hover:opacity-80'
-                                }`}
-                                style={{
-                                    backgroundColor: isActive ? 'var(--accent)' : 'transparent',
-                                    color: isActive ? 'white' : 'var(--text-secondary)',
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (!isActive) {
-                                        e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
-                                        e.currentTarget.style.color = 'var(--text-primary)';
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (!isActive) {
-                                        e.currentTarget.style.backgroundColor = 'transparent';
-                                        e.currentTarget.style.color = 'var(--text-secondary)';
-                                    }
-                                }}
-                            >
-                                <Icon className="w-5 h-5" />
-                                {item.label}
-                            </Link>
-                        );
-                    })}
-                </nav>
-
-                <Link
-                    href="/admin/admin-courses/new-course"
-                    className="w-full py-3 px-4 rounded-lg font-medium mb-4 text-center transition-all duration-200 hover:opacity-90"
-                    style={{ backgroundColor: 'var(--accent)', color: 'white' }}
-                >
-                    Create Course
-                </Link>
-
-                <div className="space-y-2">
-                    <button
-                        className="w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200"
-                        style={{ color: 'var(--text-secondary)' }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
-                            e.currentTarget.style.color = 'var(--text-primary)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                            e.currentTarget.style.color = 'var(--text-secondary)';
-                        }}
-                    >
-                        <HiCog className="w-5 h-5" />
-                        Settings
-                    </button>
-                    <button
-                        onClick={logout}
-                        className="w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200"
-                        style={{ color: 'var(--error)' }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
-                    >
-                        <HiLogout className="w-5 h-5" />
-                        Logout
-                    </button>
-                </div>
-            </aside>
-
+            <AdminSidebar />
             {/* Main Content */}
             <main className="flex-1 p-8 overflow-y-auto" style={{ backgroundColor: 'var(--bg-primary)' }}>
                 {/* Header */}

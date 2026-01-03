@@ -127,15 +127,6 @@ export default function AdminUserDetailsPage({ userId }: AdminUserDetailsPagePro
                                     >
                                         {user.role}
                                     </span>
-                                    <span 
-                                        className="px-3 py-1 rounded-full text-sm font-medium"
-                                        style={{
-                                            backgroundColor: 'rgba(34, 197, 94, 0.2)',
-                                            color: '#22c55e',
-                                        }}
-                                    >
-                                        {user.status}
-                                    </span>
                                 </div>
                             </div>
                         </div>

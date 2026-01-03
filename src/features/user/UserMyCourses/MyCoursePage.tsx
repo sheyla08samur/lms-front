@@ -208,7 +208,6 @@ export default function MyCoursePage({ courseId }: MyCoursePageProps) {
                         </div>
                     </div>
                 </div>
-                </div>
             </main>
         </div>
     );

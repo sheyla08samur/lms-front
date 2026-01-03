@@ -387,9 +387,6 @@ export default function EditCoursePage({ courseId }: EditCoursePageProps) {
                         </div>
                     </div>
 
-                            </div>
-                        </div>
-
                         <div className="mt-8 flex justify-end gap-4">
                             <Link
                                 href="/admin/admin-courses"

@@ -12,7 +12,7 @@ import type {
   ApiError,
 } from './types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://lms-back-json-server.onrender.com';
 
 // Helper para obtener token de autenticación
 const getAuthToken = (): string | null => {
